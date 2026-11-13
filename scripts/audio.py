@@ -200,15 +200,17 @@ def smooth_env(mask, ms=120):
     return np.convolve(mask, ker, mode="same")
 
 
-def main():
-    n = int(TOTAL * SR)
+def build(vo_plan=None, total=None, out_name="audio_mix.wav", seed=1):
+    vo_plan = vo_plan or VO_PLAN
+    total = total or TOTAL
+    n = int(total * SR)
     t = np.arange(n) / SR
     os.makedirs(BUILD, exist_ok=True)
 
     # ---- voice-over -------------------------------------------------------
     vo = np.zeros(n)
     vo_mask = np.zeros(n)
-    for name, start in VO_PLAN:
+    for name, start in vo_plan:
         clip = decode_mp3(os.path.join(VO, name))
         clip = clip / (np.max(np.abs(clip)) + 1e-9) * 0.95
         # tiny fades to avoid clicks
@@ -222,8 +224,8 @@ def main():
 
     # ---- music ------------------------------------------------------------
     music = drone(n, t) * 0.85 + pad_chords(n, t)
-    music += heartbeat_track(n, t)
-    music += shimmer(n, t)
+    music += heartbeat_track(n, t, end=total)
+    music += shimmer(n, t, end=total)
     music += riser(n, t, [3.2, 8.8, 14.8, 20.0, 27.0, 30.3])
     music += whoosh(n, t, 30.3, gain=0.30)
     music += whoosh(n, t, 3.2, gain=0.16)
@@ -231,7 +233,7 @@ def main():
 
     # intro fade + outro fade
     music *= np.clip(t / 1.2, 0, 1)
-    music *= np.clip((TOTAL - t) / 2.2, 0, 1)
+    music *= np.clip((total - t) / 2.2, 0, 1)
     music = np.tanh(music * 1.15) * 0.9  # gentle saturation
 
     # ---- ducking ----------------------------------------------------------
@@ -258,7 +260,7 @@ def main():
     stereo = np.stack([np.tanh(stereo[:, 0] * 1.02), np.tanh(stereo[:, 1] * 1.02)], axis=1)
     stereo = stereo / (np.max(np.abs(stereo)) + 1e-9) * 0.89
 
-    out = os.path.join(BUILD, "audio_mix.wav")
+    out = os.path.join(BUILD, out_name)
     pcm = (np.clip(stereo, -1, 1) * 32767).astype(np.int16)
     import wave
     with wave.open(out, "wb") as w:
@@ -266,8 +268,12 @@ def main():
         w.setsampwidth(2)
         w.setframerate(SR)
         w.writeframes(pcm.tobytes())
-    print("wrote", out, "dur", TOTAL)
-    return TOTAL
+    print("wrote", out, "dur", round(total, 2), "lines", len(vo_plan))
+    return total
+
+
+def main():
+    return build()
 
 
 if __name__ == "__main__":

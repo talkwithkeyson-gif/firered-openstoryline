@@ -1,8 +1,9 @@
-# AURA X1 — “Upcoming Phone” Concept Teaser
+# AURA X1 — “Upcoming Phone” Concept Film
 
-A 35.6-second, vertical (1080×1920, 30 fps) product teaser for a fictional upcoming
-flagship phone — **AURA X1** — narrated in **Nepali** with an original synthesised
-soundtrack, Nepali + English subtitles, and fully procedural motion-graphics.
+A **73-second full film** (plus a 35.6-second cut-down) for a fictional upcoming
+flagship phone — **AURA X1**. Vertical 1080×1920, 30 fps, narrated in **Nepali** with an
+original synthesised soundtrack, Nepali + English subtitles, and fully procedural
+motion-graphics.
 
 Everything here is generated from code in this repo: no stock footage, no external
 editing app. The device renders are AI-generated concept art (`assets/img/`), and the
@@ -12,12 +13,34 @@ piece is explicitly a **concept sample**, not a real product announcement.
 
 | File | What it is |
 | --- | --- |
-| `aura_x1_teaser.mp4` | The video — 1080×1920, 30 fps, H.264 + AAC, ~35.6 s |
-| `aura_x1_teaser.srt` | Bilingual (Nepali / English) captions timed to the voice-over |
+| `aura_x1_full.mp4` | **The full film** — 1080×1920, 30 fps, H.264 + AAC, 1:13 |
+| `aura_x1_full.srt` | Bilingual captions for the full film (15 cues) |
+| `aura_x1_teaser.mp4` | The original 35.6 s teaser cut |
+| `aura_x1_teaser.srt` | Bilingual captions for the teaser (7 cues) |
 | `poster.png` | 1080×1920 poster frame |
 | `endcard.jpg` | End-card still |
 
-## Storyboard
+## Full film (73 s) — 15 beats
+
+| Time | Scene | On screen |
+| --- | --- | --- |
+| 0:00 | Cold open | केही नयाँ आउँदैछ। |
+| 0:03 | Hero reveal | AURA X1 · औरा एक्स वान |
+| 0:09 | Craft | हरेक विवरण, हातले बनाए जस्तै (in-hand shot) |
+| 0:14 | Display | 6.8" edge-to-edge · 144Hz |
+| 0:20 | Camera | 200MP · रात पनि दिन जस्तै |
+| 0:26 | Night mode | आँखाले देख्न नसक्ने रातमा पनि (night street photo) |
+| 0:29 | Build | टाइटेनियम · 6.9MM |
+| 0:35 | Durability | IP68 · पानी र धुलोबाट सुरक्षित |
+| 0:40 | Battery | 5,000mAh · 80W · animated charge ring |
+| 0:45 | Chip | 2× FASTER · animated silicon die + data pulses |
+| 0:51 | Software | 7 YEARS · सात वर्षको अपडेट |
+| 0:56 | Colours | चार रङ। एउटै विरासत। (four-finish lineup) |
+| 1:00 | Launch | डिसेम्बर 2026 · worldwide |
+| 1:04 | Pre-order | CTA pill · अहिले नै दर्ता गर्नुहोस् |
+| 1:08 | Lockup | AURA X1 · भोलिको फोन। आज। |
+
+## Teaser cut (35.6 s)
 
 | Time | Scene | Copy (Nepali) | English |
 | --- | --- | --- | --- |
@@ -34,10 +57,18 @@ piece is explicitly a **concept sample**, not a real product announcement.
 ```bash
 pip install pillow numpy uharfbuzz freetype-py fonttools brotli imageio-ffmpeg
 
-python scripts/audio.py        # voice-over bed + synthesised score -> build/audio_mix.wav
-python scripts/render.py       # every frame -> aura_x1_teaser.mp4
-python scripts/subtitles.py    # -> aura_x1_teaser.srt
-python scripts/render.py --preview 2,6,12,18,24,29,34   # quick PNG stills
+# full film
+python scripts/long_render.py --audio-only      # -> build/audio_full.wav
+python scripts/long_render.py                   # -> aura_x1_full.mp4  (~7 min on 2 cores)
+python scripts/subtitles.py --full              # -> aura_x1_full.srt
+
+# 35.6 s teaser cut
+python scripts/audio.py
+python scripts/render.py
+python scripts/subtitles.py
+
+# quick PNG stills at chosen timestamps
+python scripts/long_render.py --preview 5,20,37,71
 ```
 
 Fonts (Inter and Noto Sans Devanagari, both OFL) are vendored under `assets/fonts/`.
@@ -60,9 +91,13 @@ Fonts (Inter and Noto Sans Devanagari, both OFL) are vendored under `assets/font
 
 ## Changing copy or timing
 
-Narration lines and their start times live in `scripts/audio.py` (`VO_PLAN`), and the
-matching on-screen copy lives in `scripts/render.py` (one function per scene) plus
-`scripts/subtitles.py` (`LINES`). Scene boundaries are the `S1…S7` constants.
+Narration lines and their start times live in `scripts/long_render.py` (`VO_PLAN`,
+15 lines) for the full film and `scripts/audio.py` (`VO_PLAN`, 7 lines) for the teaser.
+On-screen copy lives in `long_render.py` (one function per scene) and the caption text
+in `scripts/subtitles.py` (`FULL_LINES` / `SHORT_LINES`). Scene boundaries are the
+`SCENES` list. Every scene duration is derived from those two lists, so retiming is a
+matter of editing the numbers — the score, risers and flashes follow automatically.
 
-Device facts are invented for the demo (6.8" 144Hz, 200MP, 6.9mm titanium,
-December 2026) — swap them for your real specs.
+Device facts are invented for the demo (6.8" 144Hz, 200MP, 6.9mm titanium, IP68,
+5,000mAh/80W, 7 years of updates, four finishes, December 2026) — swap them for your
+real specs. The film is labelled "CONCEPT FILM" on the end card.
